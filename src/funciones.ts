@@ -1,82 +1,79 @@
 import { ValidacionClave } from "./modelo";
 
-//Nos aseguramos que esta definido antes de usarlo
-const validacion: ValidacionClave = {
-  esValida: false,
+// Función para inicializar la validación
+const iniciarValidacion = (): ValidacionClave => ({
+  esValida: true,
   error: undefined,
+});
+
+// Función para agregar un error a la validación
+const agregarError = (mensaje: string, validacion: ValidacionClave): void => {
+  validacion.esValida = false;
+  validacion.error = mensaje;
 };
 
-//La clave debe de tener mayúsculas y minúsculas.
-//PODEMOS REFACTORIZAR LAS CONDICIONES DEL IF PONIENDO !(NOT) EN AMBOS .TEST Y CAMBIAR EL esValida A TRUE ARRIBA
-const tieneMayusculasYMinusculas = (clave: string): ValidacionClave => {
-  if (/[a-z]/.test(clave) && /[A-Z]/.test(clave)) {
-    validacion.esValida = true;
-  } else {
-    validacion.error = "La clave debe de tener mayúsculas y minúsculas";
+// La clave debe tener mayúsculas y minúsculas.
+const tieneMayusculasYMinusculas = (
+  clave: string,
+  validacion: ValidacionClave
+): void => {
+  if (!(/[a-z]/.test(clave) && /[A-Z]/.test(clave))) {
+    agregarError("La clave debe tener mayúsculas y minúsculas", validacion);
   }
-  return validacion;
 };
 
-//La clave debe de tener números.
-const tieneNumeros = (clave: string): ValidacionClave => {
-  if (/\d/.test(clave)) {
-    validacion.esValida = true;
-  } else {
-    validacion.error = "La clave debe de tener números";
+// La clave debe tener números.
+const tieneNumeros = (clave: string, validacion: ValidacionClave): void => {
+  if (!/\d/.test(clave)) {
+    agregarError("La clave debe tener números", validacion);
   }
-  return validacion;
 };
 
-//La clave debe de tener caracteres especiales (@,#,+, _, ...)
-const tieneCaracteresEspeciales = (clave: string): ValidacionClave => {
-  if (/[!@#$%^&*(),.?":{}|<>]/.test(clave)) {
-    validacion.esValida = true;
-  } else {
-    validacion.error = "La clave debe de tener caracteres especiales";
+// La clave debe tener caracteres especiales (@,#,+, _, ...)
+const tieneCaracteresEspeciales = (
+  clave: string,
+  validacion: ValidacionClave
+): void => {
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(clave)) {
+    agregarError("La clave debe tener caracteres especiales", validacion);
   }
-  return validacion;
 };
 
-//La clave debe de tener una longitud mínima de 8 caracteres.
-const tieneLongitudMinima = (clave: string): ValidacionClave => {
-  if (clave.length >= 8) {
-    validacion.esValida = true;
-  } else {
-    validacion.error =
-      "La clave debe de tener una longitud mínima de 8 caracteres";
+// La clave debe tener una longitud mínima de 8 caracteres.
+const tieneLongitudMinima = (
+  clave: string,
+  validacion: ValidacionClave
+): void => {
+  if (clave.length < 8) {
+    agregarError(
+      "La clave debe tener una longitud mínima de 8 caracteres",
+      validacion
+    );
   }
-  return validacion;
 };
 
-//La clave no debe tener el nombre del usuario.
+// La clave no debe tener el nombre del usuario.
 const tieneNombreUsuario = (
   nombreUsuario: string,
-  clave: string
-): ValidacionClave => {
+  clave: string,
+  validacion: ValidacionClave
+): void => {
   if (clave.toLowerCase().includes(nombreUsuario.toLowerCase())) {
-    validacion.error = "La clave no debe tener el nombre del usuario";
-  } else {
-    validacion.esValida = true;
+    agregarError("La clave no debe tener el nombre del usuario", validacion);
   }
-  return validacion;
 };
 
-//La clave no debe de contener palabras comunes (le pasaremos un array de palabras comunes).
+// La clave no debe contener palabras comunes.
 const tienePalabrasComunes = (
   clave: string,
-  commonPasswords: string[]
-): ValidacionClave => {
-  const comprobacion: boolean = commonPasswords.some((p) => {
-    clave.toLowerCase().includes(p);
-  });
-
-  if (comprobacion) {
-    validacion.error = "La clave no debe de contener palabras comunes";
-  } else {
-    validacion.esValida = true;
+  commonPasswords: string[],
+  validacion: ValidacionClave
+): void => {
+  if (
+    commonPasswords.some((p) => clave.toLowerCase().includes(p.toLowerCase()))
+  ) {
+    agregarError("La clave no debe contener palabras comunes", validacion);
   }
-
-  return validacion;
 };
 
 export const validarClave = (
@@ -84,15 +81,14 @@ export const validarClave = (
   clave: string,
   commonPasswords: string[]
 ): ValidacionClave => {
-  validacion.esValida = false;
-  validacion.error = undefined;
+  const validacion = iniciarValidacion();
 
-  tieneMayusculasYMinusculas(clave);
-  tieneNumeros(clave);
-  tieneCaracteresEspeciales(clave);
-  tieneLongitudMinima(clave);
-  tieneNombreUsuario(nombreUsuario, clave);
-  tienePalabrasComunes(clave, commonPasswords);
+  tieneMayusculasYMinusculas(clave, validacion);
+  tieneNumeros(clave, validacion);
+  tieneCaracteresEspeciales(clave, validacion);
+  tieneLongitudMinima(clave, validacion);
+  tieneNombreUsuario(nombreUsuario, clave, validacion);
+  tienePalabrasComunes(clave, commonPasswords, validacion);
 
   return validacion;
 };
